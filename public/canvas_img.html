@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <div>
+      <canvas id="myCanvas" width="500" height="500"></canvas>
+    </div>
+  </body>
+  <script>
+    const myCanvas = document.getElementById('myCanvas');
+    const ctx = myCanvas.getContext('2d');
+
+    fetch('/getIMGfromDB', {
+      method: 'post',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        name: 'dog',
+      }),
+    })
+      .then((res) => res.json())
+      .then(async (res) => {
+        console.log(res); // 서버 응답 로그
+
+        const binary = new Uint8Array(res['result'][0]['img']['data']);
+        console.log(binary); // 바이너리 데이터 로그
+
+        const blob = new Blob([binary], { type: 'image/jpeg' });
+        const img = new Image();
+
+        img.src = URL.createObjectURL(blob);
+        img.onload = () => {
+          ctx.drawImage(img, 0, 0, 500, 500);
+        };
+        img.onerror = (err) => {
+          console.error('Image load error:', err);
+        };
+      })
+      .catch((err) => {
+        console.error('Fetch error:', err);
+      });
+  </script>
+</html>
